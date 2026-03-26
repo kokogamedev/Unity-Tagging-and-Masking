@@ -1,0 +1,18 @@
+{
+    "name": "PsigenVision.TaggingAndMasking.Editor",
+    "rootNamespace": "PsigenVision.TagMasking.Editor",
+    "references": [
+        "PsigenVision.TaggingAndMasking.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
