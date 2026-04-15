@@ -12,5 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5eb89fdb77bc3049973e6f2a47d1b15, type: 3}
   m_Name: ExampleWithTagMask
   m_EditorClassIdentifier: Assembly-CSharp::PsigenVision.TagMasking.Examples.ExampleWithTagMask
-  <TagLibrary>k__BackingField: {fileID: 11400000, guid: 0ebf038a838d8ec4a814f6584b8f0d45, type: 2}
-  mask: 15
+  <IntTagLibrary>k__BackingField: {fileID: 11400000, guid: 0ebf038a838d8ec4a814f6584b8f0d45, type: 2}
+  <ByteTagLibrary>k__BackingField: {fileID: 11400000, guid: 89d8323f55c88d944a8947eb0d52513b, type: 2}
+  intMaskFromSerializedField: 10
+  intMaskFromSpecifiedPath: 36
+  intMaskFromBadPath: 0
+  byteMaskFromSerializedField: 0
+  byteMaskFromSpecifiedPath: 0
+  byteMaskFromBadPath: 0

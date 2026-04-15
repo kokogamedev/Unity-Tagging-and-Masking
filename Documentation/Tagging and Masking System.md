@@ -1,154 +1,171 @@
-# Documentation: Tagging and Masking System
+# **Documentation: Tagging and Masking System**
 
 ---
 
-### Key Components and Their Responsibilities
+### **Key Components and Their Responsibilities**
 
-This bitmask-based categorization system facilitates lightweight tagging and masking using 32-bit integer bitmasks. The system utilizes `int` instead of wrapping structs for performance reasons, while custom property drawers enhance Inspector usability with dropdowns.
+This bitmask-based categorization system facilitates lightweight tagging and masking using **32-bit integers** or **8-bit bytes**. The system prioritizes performance by relying on primitive types (`int` and `byte`), with enhanced Unity Inspector usability via dropdown-driven custom property drawers.
 
 ---
 
-#### Key Responsibilities:
+### **Key Responsibilities**
 
-**TagMaskLibrary**
-- Stores string-based labels for 32-bit fields.
-- Provides mapping between human-readable labels and bit positions.
+#### **TagMaskLibrary/ByteTagMaskLibrary**
+- Stores string-based labels for:
+    - **`TagMaskLibrary`**: 32-bit fields associated with `int` properties.
+    - **`ByteTagMaskLibrary`**: 8-bit fields associated with `byte` properties.
+- Provides mappings between human-readable labels and bit positions.
 - Derives bitmask values based on label strings.
+- Can be referenced explicitly via serialized fields or dynamically through a **path-specific attribute**.
 
-**TagMaskLibraryEditor**
-- Custom Inspector that ensures the `TagMaskLibrary` array always maintains a fixed size of 32 labels.
+#### **TagMaskLibraryEditor/ByteTagMaskLibraryEditor**
+- Custom Editor ensures array integrity:
+    - Enforces **32 labels** for `TagMaskLibrary`.
+    - Enforces **8 labels** for `ByteTagMaskLibrary`.
 
-**TagMaskAttribute**
-- Flags `int` fields for being drawn with bitmask dropdowns utilizing the appropriate tag library.
+#### **TagMaskAttribute/ByteTagMaskAttribute**
+- Custom attributes that flag:
+    - **`TagMaskAttribute`**: For `int` fields (32-bit tagging).
+    - **`ByteTagMaskAttribute`**: For `byte` fields (8-bit tagging).
+- Supports dropdown-driven tagging with:
+    - **Parameterless configuration**: Relies on serialized `TagMaskLibrary`/`ByteTagMaskLibrary` references in the field's parent object.
+    - **Path-specific overloads**: Allows specifying the path to a `TagMaskLibrary`/`ByteTagMaskLibrary` asset directly in the attribute.
 
-**TagMaskDrawer**
-- Custom property drawer that renders a dropdown of tag options for an `int` field marked with `[TagMask]`.
-- Ensures fields are associated with a valid `TagMaskLibrary`. Displays warnings otherwise.
-
-**IUseTagMask Interface**
-- Enforces the implementation of a `TagMaskLibrary` reference when `[TagMask]` is utilized.
-
----
-
-### Example Workflow
-
-1. **Create a Tag Library**:
-	- Use `Create > PsigenVision > TagMaskLibrary` to create a `TagMaskLibrary` asset.
-	- Enter string labels into the Inspector for each bit position (0–31).
-
-2. **Add Tags to a Script**:
-	- Reference the `TagMaskLibrary` in your script using the `IUseTagMask` interface.
-	- Mark `int` fields with `[TagMask]` to enable dropdown-based tag selection.
-
-3. **Inspector Visualization**:
-	- Fields marked with `[TagMask]` display a dropdown of tags in the Inspector, leveraging the associated `TagMaskLibrary`.
+#### **TagMaskDrawer/ByteTagMaskDrawer**
+- Custom property drawers render dropdown menus:
+    - Display tag options for selecting active bits in an `int` or `byte`.
+    - Validate the presence of a valid `TagMaskLibrary` or `ByteTagMaskLibrary`.
+    - Display warnings in the Unity Inspector when no valid library is found.
 
 ---
 
-### Benefits of the System
+### **Example Workflow**
 
-- Minimizes overhead by storing masks as `int` values.
-- Provides Inspector-friendly workflows for selecting bitmask-based tags.
-- Enforces strict structure with 32-bit tagging systems, avoiding logic gaps.
+#### 1. **Create a Tag Library**
+- Use `Create > PsigenVision > TagMaskLibrary` or `ByteTagMaskLibrary` to create the desired tag library asset.
+- Enter string labels for each bit position:
+    - **`TagMaskLibrary`**: 32 labels, corresponding to 32-bit integer fields.
+    - **`ByteTagMaskLibrary`**: 8 labels, corresponding to 8-bit byte fields.
 
----
+#### 2. **Mark Fields with Attributes**
+- Add `[TagMask]` or `[ByteTagMask]` above an `int` or `byte` field to enable dropdown-driven tagging in the Inspector.
 
-### Limitations
-1. Only 32 tags are supported based on `int` bit size.
-2. A script can reference only one `TagMaskLibrary`.
-3. A script must cache a reference to the TagMaskLibrary being used in order to take advantage of the [TagMask] attribute
-4. Comparisons between bitmasks from different tag libraries may lead to bugs due to the lack of type safety.
-
----
-## Component Breakdown
-
-Here’s a detailed breakdown of each component, its role, and how it contributes to the overall tagging and masking system.
-
----
-
-### 1. **`TagMaskLibrary` Class**
-
-#### Purpose:
-The `TagMaskLibrary` stores string-based labels that map to the 32-bit fields of a bitmask. This class allows developers to maintain a human-readable set of tag labels and retrieve their associated bitmask values.
-
-#### Key Features:
-1. **Fixed Size**: Always contains exactly 32 string labels to correspond with the number of bits in an `int`.
-2. **Mapping Between Strings and Bits**: Associates each tag label with a specific bit position for easy lookups.
-
-#### Key API:
-- **`string[] Tags`**  
-  The array of 32 string labels representing the tags. Each position in the array maps to a bit position.
-
-- **`int ToMask(string label)`**  
-  Returns the bitmask value corresponding to the specified label. If the label is invalid, returns `0`.
-
-- **`string ToLabel(int bitIndex)`**  
-  Returns the label corresponding to the specified bit position. If the bit position is invalid (out of range), returns `null`.
+#### 3. **Reference a Tag Library**
+- There are two ways to point fields to the desired library:
+    1. **Serialized Reference**:  
+       Use the parameterless `[TagMask]` or `[ByteTagMask]` attribute. This requires the script to include serialized fields referencing a `TagMaskLibrary` or `ByteTagMaskLibrary`.
+       ```csharp
+       [SerializeField]
+       private TagMaskLibrary myLibrary;
+  
+       [TagMask]
+       public int myTagMask;
+       ```
+    2. **Path-Based Reference**:  
+       Use the path-specific overload to directly associate the field with a library stored at a specific location.
+       ```csharp
+       [TagMask("Assets/MyLibrary.asset")]
+       public int myTagMask;
+       ```
 
 ---
 
-### 2. **`TagMaskLibraryEditor` Class**
+### **Key Benefits of the System**
 
-#### Purpose:
-Custom Editor script for `TagMaskLibrary`. It enforces constraints on the `Tags` array to ensure a consistent 32-label size. If a developer tries to alter the size of the array, the editor will reset it to 32 elements.
-
-#### Features:
-- Prevents accidental modifications of the number of tags.
-- Provides warnings if incomplete or mismatched data is detected during runtime.
-
----
-
-### 3. **`TagMaskAttribute`**
-
-#### Purpose:
-A custom attribute used to mark `int` fields as Tag Masks. It indicates that an integer field in a MonoBehaviour or other Unity script should use the dropdown-based tagging system in the Inspector.
-
-#### Key Considerations:
-- Any field marked with `[TagMask]` must have a valid reference to a `TagMaskLibrary` to function correctly.
-
-#### Syntax:
-```csharp
-[TagMask]
-public int myTagMask;
-```
+- **Minimal Overhead**:  
+  Lightweight storage by using `int` for 32-bit tags and `byte` for 8-bit tags.
+- **Inspector-Friendly**:  
+  Dropdown menus make tagging quick and user-friendly.
+- **Configurable References**:  
+  Flexibility to reference tag libraries either via serialized fields or explicitly by paths.
+- **Validation**:  
+  Prevents mismatched data by ensuring fixed sizes for tag libraries corresponding to their bitmasks.
 
 ---
 
-### 4. **`TagMaskDrawer`**
+### **System Limitations**
 
-#### Purpose:
-A custom property drawer that renders a dropdown list of tags for any field marked with `[TagMask]`. The dropdown options correspond to the tags defined in the associated `TagMaskLibrary`.
-
-#### Key Responsibilities:
-1. **Inspector UI**: Renders a dropdown menu for selecting which tags should be active in the bitmask.
-2. **Validation**: Warns if no `TagMaskLibrary` is found or if the associated library contains incomplete data.
-3. **Dynamic Updates**: Reflects changes in the `TagMaskLibrary` immediately in the Inspector.
-
----
-
-### 5. **`IUseTagMask` Interface**
-
-#### Purpose:
-Enforces a contract that classes using `[TagMask]` fields must provide a reference to a valid `TagMaskLibrary`. This ensures that `[TagMask]`-decorated fields are always tied to a well-defined set of tags.
-
-#### Key Members:
-- **`TagMaskLibrary Library { get; }`**  
-  A property that returns the `TagMaskLibrary` being used for tag definitions.
-
-#### Use Cases:
-- Ensures valid `TagMaskLibrary` references are provided, preventing uncaught runtime issues.
-- Encourages standardized implementation for any system using the tagging system.
+1. **Bitmask Capacity**:
+    - `int` fields are limited to **32 tags**.
+    - `byte` fields are limited to **8 tags**.
+2. **Single Tag Library (Parameterless Attribute)**:
+    - A parameterless `[TagMask]` or `[ByteTagMask]` attribute assumes a single tag library per script. To use multiple libraries, you must utilize the path overload with the attribute.
+3. **No Cross-Library Comparison Safety**:
+    - Comparisons between bitmasks from different tag libraries are not enforced by type safety and could result in bugs.
 
 ---
 
-### Summary of Component Responsibilities
+### **Component Breakdown**
 
-| Component                 | Key Role                                   |
-|---------------------------|-------------------------------------------|
-| **TagMaskLibrary**        | Stores tag definitions and mappings.      |
-| **TagMaskLibraryEditor**  | Ensures a strict 32-tag structure.        |
-| **TagMaskAttribute**      | Tags `int` fields for dropdowns.          |
-| **TagMaskDrawer**         | Renders dropdown in the Unity Inspector.  |
-| **IUseTagMask Interface** | Enforces `TagMaskLibrary` validation.     |
+#### 1. **`TagMaskLibrary`/`ByteTagMaskLibrary`**
+
+##### Purpose:
+Stores string-based tag definitions and provides mappings to their respective bitmask values.
+
+##### Features:
+- **Fixed Array Size**:
+    - `TagMaskLibrary`: Always 32 labels for 32-bit fields.
+    - `ByteTagMaskLibrary`: Always 8 labels for 8-bit fields.
+- **Efficient Mapping**:
+    - Label-to-bit mask conversion.
+    - Bit-position lookups.
+
+##### Key API:
+- **`Tags`**:  
+  Array of tag labels. Each index corresponds to a bit position.
+- **`ToMask(string label)`**:  
+  Converts a label into its corresponding bitmask value.
+- **`ToLabel(int bitIndex)`**:  
+  Converts a bit index into a label string.
+
+---
+
+#### 2. **`TagMaskLibraryEditor`/`ByteTagMaskLibraryEditor`**
+
+##### Purpose:
+Custom Editor scripts enforce strict label counts for their respective tag libraries.
+
+##### Features:
+- Prevents developers from resizing the label arrays:
+    - 32-label constraint for `TagMaskLibrary`.
+    - 8-label constraint for `ByteTagMaskLibrary`.
+- Displays warnings for incomplete or invalid arrays.
+
+---
+
+#### 3. **`TagMaskAttribute`/`ByteTagMaskAttribute`**
+
+##### Purpose:
+Identifies `int` or `byte` fields as Tag Masks, rendering them with dropdown menus in the Inspector.
+
+##### Features:
+- Parameterless (`[TagMask]`/`[ByteTagMask]`): Relies on serialized `TagMaskLibrary`/`ByteTagMaskLibrary`.
+- Path-Specific (`[TagMask("path")]`/`[ByteTagMask("path")]`): Dynamically loads a tag library from the given path.
+
+---
+
+#### 4. **`TagMaskDrawer`/`ByteTagMaskDrawer`**
+
+##### Purpose:
+Custom property drawers render dropdown menus in the Inspector for fields marked with `[TagMask]` or `[ByteTagMask]`.
+
+##### Features:
+- Dropdown-driven tag selection corresponding to the referenced tag library.
+- Displays warnings if no valid tag library is found.
+
+---
+
+### **Summary of Component Responsibilities**
+
+| Component                    | Responsibility                                      |
+|------------------------------|----------------------------------------------------|
+| **TagMaskLibrary**           | Stores 32-bit tag definitions.                     |
+| **ByteTagMaskLibrary**       | Stores 8-bit tag definitions.                      |
+| **TagMaskLibraryEditor**     | Ensures fixed 32-label structure.                  |
+| **ByteTagMaskLibraryEditor** | Ensures fixed 8-label structure.                   |
+| **TagMaskAttribute**         | Flags `int` fields for 32-bit tag masks.           |
+| **ByteTagMaskAttribute**     | Flags `byte` fields for 8-bit tag masks.           |
+| **TagMaskDrawer**            | Renders dropdowns for tag selection in Inspector.  |
+| **ByteTagMaskDrawer**        | Renders dropdowns for tag selection in Inspector.  |
 
 ---

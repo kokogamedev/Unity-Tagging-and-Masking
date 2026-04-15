@@ -12,6 +12,21 @@ namespace PsigenVision.TagMasking
     /// </remarks>
     public class TagMaskAttribute : PropertyAttribute
     {
-        //Noop - this attribute is meant solely for marking an int/bitmask for redrawing by the TagMaskDrawer
+        public bool hasSpecifiedPath = false;
+        public string LibraryPath;
+        //Noop - this attribute is meant solely for marking a int-bitmask for redrawing by the TagMaskDrawer
+        public TagMaskAttribute()
+        {
+            //This overload assumes a serialized field to which the TagMaskLibrary is assigned
+            hasSpecifiedPath = false;
+            LibraryPath = null;
+        }
+	    
+        public TagMaskAttribute(string path)
+        {
+            //This overload assumes an SO-instance of TagMaskLibrary is stored at the passed in path
+            hasSpecifiedPath = true;
+            LibraryPath = path;
+        }
     }
 }
