@@ -3,7 +3,7 @@
   "displayName": "Tagging and Masking System",
   "version": "0.2.1",
   "unity": "2019.4",
-  "description": "Replace this with your own description of the package. \n\nFor best results, use this text to summarize: \n▪ What the package does \n▪ How it can benefit the user \n\nNote: Special formatting characters are supported, including line breaks ('\\n') and bullets ('\\u25AA').",
+  "description": "A lightweight and efficient tagging and masking system for Unity designed as a flexible replacement for restrictive enums. This package enables the use of customizable bitmask-based categories stored as integer- or byte-types, with user-friendly dropdown selection in the Unity Inspector whose labels are defined using swappable scriptable objects.",
   "author": {
     "name": "David Kokoski",
     "email": "kokogamedev@gmail.com"
